@@ -1,0 +1,49 @@
+[
+    {
+      "nome": "Saralina",
+      "data": "2025-05-30",
+      "local": "SP",
+      "descricao": "Uma festa de música eletrônica com os melhores DJs do Brasil.",
+      "imagem": "saralina.jpg",
+      "categorias": {
+        "Masculino": 350,
+        "Feminino": 280
+      }
+    },
+    {
+      "nome": "Bar dos Bixos",
+      "data": "2025-06-20",
+      "local": "SP",
+      "descricao": "Bem-vindo aos calouros! Uma noite de integração, música e diversão garantida.",
+      "imagem": "bar-dos-bixos.jpg",
+      "categorias": {
+        "Pista Masculino": 230,
+        "Pista Feminino": 190
+      }
+    },
+    {
+      "nome": "Collided",
+      "data": "2025-06-15",
+      "local": "SP",
+      "descricao": "Electro + Funk + HipHop em um dos maiores eventos indoor de São Paulo.",
+      "imagem": "collided.jpg",
+      "categorias": {
+        "Pista": 225,
+        "VIP": 300
+      }
+    },
+    {
+      "nome": "Keinemusik",
+      "data": "2025-07-25",
+      "local": "RJ",
+      "descricao": "Keinemusik pela primeira vez no Brasil — evento internacional, exclusivo, frente-mar.",
+      "imagem": "keinemusik.jpg",
+      "categorias": {
+        "Pista": 460,
+        "Camarote": 620,
+        "Backstage": 850
+      }
+    }
+    
+  ]
+  
