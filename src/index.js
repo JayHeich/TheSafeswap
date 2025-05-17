@@ -4,6 +4,7 @@ import './index.css';
 import HomePage from './HomePage';
 import RevendaPage from './RevendaPage';
 import FestasPage from './FestasPage';
+import FestaDetailPage from './FestasDetailPage';
 import ConfirmPage from './ConfirmPage';
 import Pagamento from './pagamento';
 import Checkout from './checkout';
@@ -37,6 +38,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/festas" element={<FestasPage />} />
+        <Route path="/evento" element={<FestaDetailPage />} />
         <Route path="/revenda" element={<RevendaPage />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/confirmar" element={<ConfirmPage />} />
