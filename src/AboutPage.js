@@ -95,12 +95,12 @@ export default function AboutPage() {
                 <div className="text-sm text-gray-400">Seguro</div>
               </div>
               <div className="bg-[#0f172a]/80 p-5 rounded-xl border border-[#3ddad7]/10 flex flex-col items-center">
-                <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500 mb-1">500+</div>
-                <div className="text-sm text-gray-400">Eventos</div>
+                <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500 mb-1">5%</div>
+                <div className="text-sm text-gray-400">Taxa de processamento</div>
               </div>
               <div className="bg-[#0f172a]/80 p-5 rounded-xl border border-[#3ddad7]/10 flex flex-col items-center">
-                <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500 mb-1">10k+</div>
-                <div className="text-sm text-gray-400">Usuários</div>
+                <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500 mb-1">0%</div>
+                <div className="text-sm text-gray-400">Taxa de saque</div>
               </div>
             </div>
 

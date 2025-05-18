@@ -63,7 +63,16 @@ export default function FestasPage() {
   
   const handlePriceChange = (e, index) => {
     const newRange = [...priceRange];
-    newRange[index] = parseInt(e.target.value);
+    const newValue = parseInt(e.target.value);
+    
+    // Garantir que o preço mínimo não seja maior que o preço máximo
+    // E que o preço máximo não seja menor que o preço mínimo
+    if (index === 0) { // Preço mínimo
+      newRange[index] = Math.min(newValue, priceRange[1]);
+    } else { // Preço máximo
+      newRange[index] = Math.max(newValue, priceRange[0]);
+    }
+    
     setPriceRange(newRange);
     setFiltroPrecoModificado(true); // Marcar que o usuário mexeu no filtro
   };
@@ -190,7 +199,7 @@ export default function FestasPage() {
                   type="range" 
                   min="0" 
                   max={maxPrice} 
-                  step="50"
+                  step="10"
                   value={priceRange[0]}
                   onChange={(e) => handlePriceChange(e, 0)}
                   className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
@@ -206,7 +215,7 @@ export default function FestasPage() {
                   type="range" 
                   min="0" 
                   max={maxPrice} 
-                  step="50"
+                  step="10"
                   value={priceRange[1]}
                   onChange={(e) => handlePriceChange(e, 1)}
                   className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
@@ -220,8 +229,8 @@ export default function FestasPage() {
             </div>
           </div>
           
-          {/* Status de filtros */}
-          <div className="p-4 bg-[#1e293b]/50 backdrop-blur-sm rounded-2xl">
+          {/* Status de filtros - visível apenas em desktop */}
+          <div className="hidden lg:block p-4 bg-[#1e293b]/50 backdrop-blur-sm rounded-2xl">
             <h2 className="text-xl font-semibold mb-4">Filtros Ativos</h2>
             
             <div className="space-y-3 text-sm">
@@ -383,22 +392,58 @@ export default function FestasPage() {
         /* Estilo para os sliders de preço */
         input[type=range]::-webkit-slider-thumb {
           -webkit-appearance: none;
-          height: 16px;
-          width: 16px;
+          height: 20px;
+          width: 20px;
           border-radius: 50%;
           background: #2dd4bf;
           cursor: pointer;
-          margin-top: -7px;
+          margin-top: -9px;
           border: 2px solid #0f172a;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          transition: all 0.2s ease;
+        }
+        
+        input[type=range]::-webkit-slider-thumb:hover {
+          transform: scale(1.1);
         }
         
         input[type=range]::-moz-range-thumb {
-          height: 16px;
-          width: 16px;
+          height: 20px;
+          width: 20px;
           border-radius: 50%;
           background: #2dd4bf;
           cursor: pointer;
           border: 2px solid #0f172a;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          transition: all 0.2s ease;
+        }
+        
+        input[type=range]::-moz-range-thumb:hover {
+          transform: scale(1.1);
+        }
+        
+        input[type=range] {
+          -webkit-appearance: none;
+          height: 8px;
+          border-radius: 5px;
+          background: #334155;
+          outline: none;
+          padding: 0;
+          margin: 0;
+        }
+        
+        input[type=range]::-webkit-slider-runnable-track {
+          width: 100%;
+          height: 8px;
+          cursor: pointer;
+          border-radius: 5px;
+        }
+        
+        input[type=range]::-moz-range-track {
+          width: 100%;
+          height: 8px;
+          cursor: pointer;
+          border-radius: 5px;
         }
       `}</style>
     </div>

@@ -115,12 +115,12 @@ export default function HomePage() {
                 <div className="text-xs text-gray-400">Seguro</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-teal-400 text-xl font-bold">500+</div>
-                <div className="text-xs text-gray-400">Eventos</div>
+                <div className="text-teal-400 text-xl font-bold">5%</div>
+                <div className="text-xs text-gray-400">Taxa de processamento</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-teal-400 text-xl font-bold">10k+</div>
-                <div className="text-xs text-gray-400">Usuários</div>
+                <div className="text-teal-400 text-xl font-bold">0%</div>
+                <div className="text-xs text-gray-400">Taxa de saque</div>
               </div>
             </div>
           </div>
