@@ -9,7 +9,26 @@
     "categorias": {
       "Masculino": 350,
       "Feminino": 280
-    }
+    },
+    "lineup": [
+      {
+        "nome": "Artista 1", 
+        "horario": "22:00 - 00:00"
+      },
+      {
+        "nome": "Artista 2",
+        "horario": "00:00 - 02:00"
+      },
+      {
+        "nome": "Artista 3",
+        "horario": "02:00 - 04:00"
+      },
+      {
+        "nome": "Artista 4",
+        "horario": "04:00 - 06:00"
+      }
+    ],
+    "dressCode": []
   },
   {
     "nome": "Bar dos Bixos",
@@ -21,7 +40,26 @@
     "categorias": {
       "Pista Masculino": 230,
       "Pista Feminino": 190
-    }
+    },
+    "lineup": [
+      {
+        "nome": "Artista 1", 
+        "horario": "22:00 - 00:00"
+      },
+      {
+        "nome": "Artista 2",
+        "horario": "00:00 - 02:00"
+      },
+      {
+        "nome": "Artista 3",
+        "horario": "02:00 - 04:00"
+      },
+      {
+        "nome": "Artista 4",
+        "horario": "04:00 - 06:00"
+      }
+    ],
+    "dressCode": []
   },
   {
     "nome": "Collided",
@@ -33,7 +71,26 @@
     "categorias": {
       "Pista": 225,
       "VIP": 300
-    }
+    },
+    "lineup": [
+      {
+        "nome": "Artista 1", 
+        "horario": "22:00 - 00:00"
+      },
+      {
+        "nome": "Artista 2",
+        "horario": "00:00 - 02:00"
+      },
+      {
+        "nome": "Artista 3",
+        "horario": "02:00 - 04:00"
+      },
+      {
+        "nome": "Artista 4",
+        "horario": "04:00 - 06:00"
+      }
+    ],
+    "dressCode": []
   },
   {
     "nome": "Keinemusik",
@@ -46,6 +103,25 @@
       "Pista": 460,
       "Camarote": 620,
       "Backstage": 850
-    }
+    },
+    "lineup": [
+      {
+        "nome": "Artista 1", 
+        "horario": "22:00 - 00:00"
+      },
+      {
+        "nome": "Artista 2",
+        "horario": "00:00 - 02:00"
+      },
+      {
+        "nome": "Artista 3",
+        "horario": "02:00 - 04:00"
+      },
+      {
+        "nome": "Artista 4",
+        "horario": "04:00 - 06:00"
+      }
+    ],
+    "dressCode": []
   }
 ]

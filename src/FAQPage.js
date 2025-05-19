@@ -6,17 +6,53 @@ export default function FAQPage() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState('compradores');
   const [expandedQuestions, setExpandedQuestions] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredFaqData, setFilteredFaqData] = useState({});
 
   useEffect(() => {
     // Efeito de entrada suave
     setIsLoaded(true);
+    
+    // Inicialização do FAQ filtrado
+    setFilteredFaqData(faqData);
   }, []);
+
+  // Atualiza os resultados da pesquisa quando o texto ou a aba ativa mudam
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredFaqData(faqData);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = {};
+
+    Object.keys(faqData).forEach(category => {
+      filtered[category] = faqData[category].filter(item => 
+        item.question.toLowerCase().includes(query) || 
+        item.answer.toLowerCase().includes(query)
+      );
+    });
+
+    setFilteredFaqData(filtered);
+  }, [searchQuery, activeTab]);
 
   const toggleQuestion = (id) => {
     setExpandedQuestions(prev => ({
       ...prev,
       [id]: !prev[id]
     }));
+  };
+
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      // Já estamos filtrando em tempo real, então não precisamos fazer nada extra aqui
+      e.preventDefault();
+    }
   };
 
   // Dados do FAQ organizados por categoria
@@ -79,7 +115,16 @@ export default function FAQPage() {
 
   // Renderizar as perguntas e respostas
   const renderFAQItems = (category) => {
-    return faqData[category].map((item) => (
+    if (!filteredFaqData[category] || filteredFaqData[category].length === 0) {
+      return (
+        <div className="text-center py-8 text-gray-400">
+          <p>Nenhuma pergunta encontrada para sua busca.</p>
+          <p className="mt-2 text-sm">Tente outros termos ou entre em contato conosco.</p>
+        </div>
+      );
+    }
+
+    return filteredFaqData[category].map((item) => (
       <div 
         key={item.id}
         className={`bg-[#1e293b]/80 backdrop-blur-sm rounded-xl overflow-hidden border border-[#3ddad7]/10 shadow-lg transition-all duration-300 ${expandedQuestions[item.id] ? 'shadow-cyan-500/10' : ''} mb-4`}
@@ -173,15 +218,18 @@ export default function FAQPage() {
 
           {/* Barra de pesquisa animada */}
           <div className="relative mb-10">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ filter: 'none', backdropFilter: 'none' }}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
             <input 
               type="text" 
               placeholder="Buscar uma pergunta..."
               className="w-full py-3 pl-12 pr-4 bg-[#1e293b]/50 backdrop-blur-sm border border-[#3ddad7]/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+              value={searchQuery}
+              onChange={handleSearch}
+              onKeyPress={handleKeyPress}
             />
             <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
               <span className="text-xs text-gray-400">Pressione Enter para buscar</span>

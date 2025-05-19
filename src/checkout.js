@@ -5,6 +5,11 @@ export default function Checkout() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const festa = state?.festa;
+  const [paymentMethod, setPaymentMethod] = useState('pix'); // 'pix' ou 'cartao'
+
+  // Definindo as taxas para cada método de pagamento
+  const TAXA_PIX = 0.05; // 5%
+  const TAXA_CARTAO = 0.08; // 8%
 
   if (!festa) {
     return (
@@ -33,19 +38,39 @@ export default function Checkout() {
 
   const handleQuantityChange = (cat, increment) => {
     const currentValue = quantidades[cat];
-    const newValue = increment 
-      ? Math.min(2, currentValue + 1) 
-      : Math.max(0, currentValue - 1);
-    setQuantidades(prev => ({ ...prev, [cat]: newValue }));
+    
+    // Calcula o número total de ingressos atualmente selecionados
+    const totalIngressos = Object.values(quantidades).reduce((sum, qty) => sum + qty, 0);
+    
+    if (increment) {
+      // Só permite incrementar se o total for menor que 5
+      if (totalIngressos < 5) {
+        setQuantidades(prev => ({ ...prev, [cat]: currentValue + 1 }));
+      }
+    } else {
+      // Decremento sempre é permitido até 0
+      setQuantidades(prev => ({ ...prev, [cat]: Math.max(0, currentValue - 1) }));
+    }
   };
 
   const subtotal = Object.entries(quantidades)
     .reduce((sum, [cat, qty]) => sum + qty * categorias[cat], 0);
-  const taxa = subtotal * 0.05;
+  
+  // Cálculo da taxa baseado no método de pagamento selecionado
+  const taxa = subtotal * (paymentMethod === 'pix' ? TAXA_PIX : TAXA_CARTAO);
   const total = subtotal + taxa;
 
   const handleFinalize = () => {
-    navigate('/confirmar', { state: { festaName: festa.nome, items: quantidades, total } });
+    // Verificar se o total é maior que zero
+    if (total <= 0) {
+      return;
+    }
+    
+    // Formatar o valor para usar ponto como separador decimal (padrão para URLs)
+    const valorFormatado = total.toFixed(2).replace(',', '.');
+    
+    // Redirecionar para a página de pagamento com o valor e método de pagamento
+    navigate(`/pagamento?valor=${valorFormatado}&metodo=${paymentMethod}`);
   };
 
   return (
@@ -99,7 +124,10 @@ export default function Checkout() {
 
                     <button 
                       onClick={() => handleQuantityChange(cat, true)}
-                      className="w-10 h-10 flex items-center justify-center text-white hover:bg-gray-600 transition-colors"
+                      className={`w-10 h-10 flex items-center justify-center text-white hover:bg-gray-600 transition-colors ${
+                        Object.values(quantidades).reduce((sum, qty) => sum + qty, 0) >= 5 ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                      disabled={Object.values(quantidades).reduce((sum, qty) => sum + qty, 0) >= 5}
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
@@ -109,6 +137,81 @@ export default function Checkout() {
                 </div>
               ))}
             </div>
+            
+            {/* Aviso de limite de ingressos */}
+            <div className="mt-4 text-sm text-teal-400">
+              <div className="flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"></path>
+                </svg>
+                <span>Máximo de 5 ingressos por pedido</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Método de Pagamento */}
+          <div className="border-t border-gray-700 p-6">
+            <h2 className="text-lg font-medium text-gray-300 mb-4">Método de Pagamento</h2>
+            
+            <div className="space-y-3">
+              {/* Opção PIX */}
+              <div 
+                className={`flex justify-between items-center p-4 rounded-lg cursor-pointer transition-all ${
+                  paymentMethod === 'pix' 
+                    ? 'bg-teal-500/20 border border-teal-500/40' 
+                    : 'bg-gray-700 hover:bg-gray-650 border border-gray-600'
+                }`}
+                onClick={() => setPaymentMethod('pix')}
+              >
+                <div className="flex items-center">
+                  <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
+                    paymentMethod === 'pix' 
+                      ? 'border-teal-400 bg-teal-400' 
+                      : 'border-gray-400'
+                  }`}>
+                    {paymentMethod === 'pix' && (
+                      <svg className="w-3 h-3 text-gray-900" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-medium">PIX</div>
+                    <div className="text-sm text-teal-400">Taxa de 5%</div>
+                  </div>
+                </div>
+                <div className="text-2xl">📱</div>
+              </div>
+              
+              {/* Opção Cartão */}
+              <div 
+                className={`flex justify-between items-center p-4 rounded-lg cursor-pointer transition-all ${
+                  paymentMethod === 'cartao' 
+                    ? 'bg-teal-500/20 border border-teal-500/40' 
+                    : 'bg-gray-700 hover:bg-gray-650 border border-gray-600'
+                }`}
+                onClick={() => setPaymentMethod('cartao')}
+              >
+                <div className="flex items-center">
+                  <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
+                    paymentMethod === 'cartao' 
+                      ? 'border-teal-400 bg-teal-400' 
+                      : 'border-gray-400'
+                  }`}>
+                    {paymentMethod === 'cartao' && (
+                      <svg className="w-3 h-3 text-gray-900" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-medium">Cartão de Crédito</div>
+                    <div className="text-sm text-teal-400">Taxa de 8%</div>
+                  </div>
+                </div>
+                <div className="text-2xl">💳</div>
+              </div>
+            </div>
           </div>
 
           <div className="bg-gray-750 border-t border-gray-700 p-6 space-y-2">
@@ -117,7 +220,9 @@ export default function Checkout() {
               <span className="text-base font-semibold text-white">R$ {subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400">Taxa de processamento (5%)</span>
+              <span className="text-sm text-gray-400">
+                Taxa de processamento ({paymentMethod === 'pix' ? '5%' : '8%'})
+              </span>
               <span className="text-sm font-medium text-white">R$ {taxa.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center border-t border-gray-700 pt-2 mt-2">

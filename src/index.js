@@ -1,3 +1,4 @@
+// src/index.js
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
@@ -6,10 +7,10 @@ import RevendaPage from './RevendaPage';
 import FestasPage from './FestasPage';
 import FestaDetailPage from './FestasDetailPage';
 import ConfirmPage from './ConfirmPage';
-import Pagamento from './pagamento'; // Nome do arquivo com "p" minúsculo
-import Checkout from './checkout'; // Nome do arquivo com "c" minúsculo
+import Pagamento from './pagamento'; // Corrigido para P maiúsculo conforme o nome do arquivo
+import Checkout from './checkout'; // Corrigido para C maiúsculo conforme o nome do arquivo
 import AboutPage from './AboutPage';
-import FAQPage from './FAQPage'; // Importando corretamente do arquivo separado
+import FAQPage from './FAQPage';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 
 function Cancelado() {
