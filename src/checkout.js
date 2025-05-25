@@ -66,11 +66,25 @@ export default function Checkout() {
       return;
     }
     
-    // Formatar o valor para usar ponto como separador decimal (padrão para URLs)
-    const valorFormatado = total.toFixed(2).replace(',', '.');
+    // Debug para verificar os valores
+    console.log('Finalizando compra:', {
+      subtotal: subtotal,
+      taxa: taxa,
+      total: total,
+      paymentMethod: paymentMethod
+    });
     
-    // Redirecionar para a página de pagamento com o valor e método de pagamento
-    navigate(`/pagamento?valor=${valorFormatado}&metodo=${paymentMethod}`);
+    // Usar state para passar dados ao invés de URL parameters
+    navigate('/pagamento', { 
+      state: { 
+        valor: total,
+        metodo: paymentMethod,
+        festa: festa,
+        quantidades: quantidades,
+        subtotal: subtotal,
+        taxa: taxa
+      } 
+    });
   };
 
   return (
