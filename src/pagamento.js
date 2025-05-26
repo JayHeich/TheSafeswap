@@ -93,6 +93,21 @@ export default function Pagamento() {
           qr_code_base64: data.point_of_interaction.transaction_data.qr_code_base64,
           payment_id: data.id
         });
+
+        // 🆕 SIMULAÇÃO: Após 15 segundos, simular pagamento aprovado (APENAS PARA TESTES)
+        // Em produção, isso será feito via webhook do Mercado Pago
+        setTimeout(() => {
+          console.log('Simulando pagamento PIX aprovado...');
+          navigate('/dados', { 
+            state: { 
+              paymentId: data.id,
+              status: 'approved',
+              valor: valor,
+              festa: festa
+            } 
+          });
+        }, 15000); // 15 segundos para dar tempo de testar
+
       } else {
         setError(data.error || 'Erro ao gerar QR Code. Tente novamente.');
       }
@@ -104,7 +119,7 @@ export default function Pagamento() {
     }
   };
 
-  // Função para processar pagamento com cartão
+  // 🔧 FUNÇÃO CORRIGIDA: Processar pagamento com cartão
   const processCardPayment = async () => {
     setLoading(true);
     setError('');
@@ -120,61 +135,7 @@ export default function Pagamento() {
       // Criar token do cartão usando SDK do Mercado Pago
       if (window.mp) {
         try {
-          // Criar o formulário de cartão
-          const cardForm = window.mp.cardForm({
-            amount: String(valor),
-            iframe: false,
-            form: {
-              id: "form-checkout",
-              cardNumber: {
-                id: "form-checkout__cardNumber",
-                placeholder: "Número do cartão",
-              },
-              expirationDate: {
-                id: "form-checkout__expirationDate",
-                placeholder: "MM/YY",
-              },
-              securityCode: {
-                id: "form-checkout__securityCode",
-                placeholder: "Código de segurança",
-              },
-              cardholderName: {
-                id: "form-checkout__cardholderName",
-                placeholder: "Titular do cartão",
-              },
-              issuer: {
-                id: "form-checkout__issuer",
-                placeholder: "Banco emissor",
-              },
-              installments: {
-                id: "form-checkout__installments",
-                placeholder: "Parcelas",
-              },
-              identificationType: {
-                id: "form-checkout__identificationType",
-                placeholder: "Tipo de documento",
-              },
-              identificationNumber: {
-                id: "form-checkout__identificationNumber",
-                placeholder: "Número do documento",
-              },
-              cardholderEmail: {
-                id: "form-checkout__cardholderEmail",
-                placeholder: "E-mail",
-              },
-            },
-            callbacks: {
-              onFormMounted: error => {
-                if (error) return console.warn("Form Mounted handling error: ", error);
-                console.log("Form mounted");
-              },
-              onSubmit: event => {
-                event.preventDefault();
-              }
-            }
-          });
-
-          // Método alternativo mais simples
+          // Dados do cartão para criar o token
           const cardData = {
             cardNumber: cardFormData.cardNumber.replace(/\s/g, ''),
             cardholderName: cardFormData.cardholderName,
@@ -185,15 +146,39 @@ export default function Pagamento() {
             identificationNumber: cardFormData.identificationNumber.replace(/\D/g, '')
           };
 
-          console.log('Dados do cartão para token:', cardData);
+          console.log('🔧 Dados do cartão para token:', cardData);
 
           const token = await window.mp.createCardToken(cardData);
           
-          console.log('Token criado:', token);
+          console.log('🎯 Token criado:', token);
 
           if (!token || !token.id) {
             throw new Error('Falha ao criar token do cartão');
           }
+
+          // 🔧 CORREÇÃO: Payload limpo para o backend
+          const paymentPayload = {
+            token: token.id,
+            transaction_amount: valor,
+            description: `Ingresso para ${festa?.nome || 'festa'}`,
+            installments: 1,
+            // 🎯 REMOVIDO: payment_method_id fixo - deixa o MP detectar automaticamente
+            // 🎯 REMOVIDO: issuer_id - pode causar conflitos
+            payer: {
+              email: cardFormData.email,
+              identification: {
+                type: cardFormData.identificationType,
+                number: cardFormData.identificationNumber.replace(/\D/g, '')
+              }
+            },
+            metadata: {
+              festa_id: festa?.id,
+              festa_nome: festa?.nome,
+              quantidades: quantidades
+            }
+          };
+
+          console.log('🚀 Enviando para backend:', paymentPayload);
 
           // Enviar token para o backend
           const response = await fetch('/api/process-card-payment', {
@@ -201,55 +186,41 @@ export default function Pagamento() {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              token: token.id,
-              transaction_amount: valor,
-              description: `Ingresso para ${festa?.nome || 'festa'}`,
-              installments: 1,
-              payment_method_id: token.payment_method_id || 'visa',
-              issuer_id: token.issuer_id || null,
-              payer: {
-                email: cardFormData.email,
-                identification: {
-                  type: cardFormData.identificationType,
-                  number: cardFormData.identificationNumber.replace(/\D/g, '')
-                }
-              },
-              metadata: {
-                festa_id: festa?.id,
-                festa_nome: festa?.nome,
-                quantidades: quantidades
-              }
-            })
+            body: JSON.stringify(paymentPayload)
           });
 
           const data = await response.json();
           
+          console.log('🎯 Resposta do backend:', data);
+          
           if (data.status === 'approved') {
-            // Pagamento aprovado - redirecionar para confirmação
-            navigate('/confirmacao', { 
+            console.log('✅ Pagamento aprovado! Método detectado:', data.payment_method_id);
+            
+            // Redirecionar para /dados
+            navigate('/dados', { 
               state: { 
                 paymentId: data.id,
                 status: data.status,
                 valor: valor,
-                festa: festa
+                festa: festa,
+                paymentMethod: data.payment_method_id // Incluir método detectado
               } 
             });
           } else {
             setError(`Pagamento ${data.status}. ${data.message || data.status_detail || 'Tente novamente.'}`);
           }
         } catch (tokenError) {
-          console.error('Erro ao criar token:', tokenError);
+          console.error('❌ Erro ao criar token:', tokenError);
           setError('Erro ao processar dados do cartão. Verifique as informações.');
         }
       } else {
         // Fallback se o SDK não carregar
-        console.error('SDK do Mercado Pago não carregado');
+        console.error('❌ SDK do Mercado Pago não carregado');
         setError('Erro ao carregar sistema de pagamento. Recarregue a página.');
       }
     } catch (err) {
       setError('Erro ao processar pagamento. Verifique se o servidor está rodando.');
-      console.error('Erro:', err);
+      console.error('❌ Erro:', err);
     } finally {
       setLoading(false);
     }
@@ -358,6 +329,24 @@ export default function Pagamento() {
             </button>
           </div>
 
+          {/* 🆕 NOVO: Botão para simular pagamento aprovado (APENAS PARA TESTES) */}
+          <div className="border-t border-gray-600 pt-4">
+            <p className="text-xs text-gray-400 text-center mb-3">⚠️ Modo de teste:</p>
+            <button
+              onClick={() => navigate('/dados', { 
+                state: { 
+                  paymentId: pixData.payment_id,
+                  status: 'approved',
+                  valor: valor,
+                  festa: festa
+                } 
+              })}
+              className="w-full py-3 bg-green-600 text-white font-medium rounded-lg transition-all hover:bg-green-500"
+            >
+              🧪 Simular Pagamento Aprovado
+            </button>
+          </div>
+
           <div className="text-center text-sm text-gray-400">
             <p>Após o pagamento, você será redirecionado automaticamente</p>
           </div>
@@ -374,7 +363,7 @@ export default function Pagamento() {
           <span className="text-4xl">💳</span>
         </div>
         <h3 className="text-xl font-semibold mb-2">Pagamento com Cartão</h3>
-        <p className="text-gray-400">Crédito ou débito</p>
+        <p className="text-gray-400">Crédito ou débito • Aceita Visa, Master, Amex</p>
       </div>
 
       <div className="bg-gray-700/50 rounded-lg p-4">
@@ -415,6 +404,7 @@ export default function Pagamento() {
             className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white"
             placeholder="0000 0000 0000 0000"
           />
+          <p className="text-xs text-gray-400 mt-1">Aceita Visa, Mastercard, American Express</p>
         </div>
 
         {/* Nome no Cartão */}
@@ -524,6 +514,24 @@ export default function Pagamento() {
       >
         {loading ? 'Processando...' : 'Finalizar Pagamento'}
       </button>
+
+      {/* 🆕 NOVO: Botão para simular pagamento aprovado (APENAS PARA TESTES) */}
+      <div className="border-t border-gray-600 pt-4">
+        <p className="text-xs text-gray-400 text-center mb-3">⚠️ Modo de teste:</p>
+        <button
+          onClick={() => navigate('/dados', { 
+            state: { 
+              paymentId: 'MP-TEST-' + Date.now(),
+              status: 'approved',
+              valor: valor,
+              festa: festa
+            } 
+          })}
+          className="w-full py-3 bg-green-600 text-white font-medium rounded-lg transition-all hover:bg-green-500"
+        >
+          🧪 Simular Pagamento Aprovado
+        </button>
+      </div>
     </div>
   );
 

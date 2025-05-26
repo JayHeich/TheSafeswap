@@ -18,6 +18,48 @@ const client = new MercadoPagoConfig({
 // Criar instância de Payment
 const payment = new Payment(client);
 
+// Função para detectar tipo de cartão pelos primeiros dígitos
+function detectCardType(cardNumber) {
+  // Remove espaços e mantém apenas números
+  const cleanNumber = cardNumber.replace(/\s+/g, '');
+  
+  // Visa: começa com 4
+  if (cleanNumber.startsWith('4')) {
+    return 'visa';
+  }
+  
+  // Mastercard: começa com 5 ou 2 (novo range)
+  if (cleanNumber.startsWith('5') || (cleanNumber.startsWith('2') && cleanNumber.length >= 2 && cleanNumber.substring(0, 2) >= '22' && cleanNumber.substring(0, 2) <= '27')) {
+    return 'master';
+  }
+  
+  // American Express: começa com 34 ou 37
+  if (cleanNumber.startsWith('34') || cleanNumber.startsWith('37')) {
+    return 'amex';
+  }
+  
+  // Diners: começa com 30, 36, 38
+  if (cleanNumber.startsWith('30') || cleanNumber.startsWith('36') || cleanNumber.startsWith('38')) {
+    return 'diners';
+  }
+  
+  // Elo: ranges específicos
+  const eloRanges = ['636368', '438935', '504175', '451416', '636297', '5067', '4576', '4011'];
+  for (let range of eloRanges) {
+    if (cleanNumber.startsWith(range)) {
+      return 'elo';
+    }
+  }
+  
+  // Hipercard: começa com 606282
+  if (cleanNumber.startsWith('606282')) {
+    return 'hipercard';
+  }
+  
+  // Se não detectar, retorna null para deixar o MP detectar
+  return null;
+}
+
 // Criar pagamento PIX
 exports.createPixPayment = async (req, res) => {
   try {
@@ -62,7 +104,7 @@ exports.createPixPayment = async (req, res) => {
   }
 };
 
-// Processar pagamento com cartão
+// Processar pagamento com cartão (CORRIGIDO)
 exports.processCardPayment = async (req, res) => {
   try {
     console.log('\n=== PROCESSANDO PAGAMENTO CARTÃO ===');
@@ -82,18 +124,23 @@ exports.processCardPayment = async (req, res) => {
       });
     }
 
-    // Preparar dados do pagamento - APENAS campos essenciais
+    // 🔧 CORREÇÃO: Não enviar payment_method_id fixo
+    // Deixar o Mercado Pago detectar automaticamente baseado no token
     const payment_data = {
       token: token,
       transaction_amount: Number(transaction_amount),
       installments: Number(installments) || 1,
-      payment_method_id: payment_method_id || 'visa',
+      // 🎯 REMOVIDO: payment_method_id fixo
       payer: {
-        email: payer?.email || 'test@test.com'
+        email: payer?.email || 'test@test.com',
+        identification: payer?.identification ? {
+          type: payer.identification.type || 'CPF',
+          number: payer.identification.number
+        } : undefined
       }
     };
 
-    console.log('Enviando para Mercado Pago:', JSON.stringify(payment_data, null, 2));
+    console.log('🔧 Enviando para Mercado Pago (SEM payment_method_id fixo):', JSON.stringify(payment_data, null, 2));
 
     try {
       const result = await payment.create({ body: payment_data });
@@ -102,46 +149,28 @@ exports.processCardPayment = async (req, res) => {
       console.log('ID:', result.id);
       console.log('Status:', result.status);
       console.log('Detalhes:', result.status_detail);
+      console.log('🎯 Método de pagamento detectado:', result.payment_method_id);
 
       // Retornar resposta de sucesso
       res.json({
         id: result.id,
         status: result.status,
         status_detail: result.status_detail,
+        payment_method_id: result.payment_method_id, // Incluir o método detectado
         message: result.status === 'approved' ? 'Pagamento aprovado!' : `Pagamento ${result.status}`
       });
 
     } catch (mpError) {
-      console.error('Erro do Mercado Pago:', mpError);
+      console.error('❌ Erro do Mercado Pago:', mpError);
       
-      // Se for erro de bin_not_found, vamos tentar sem o payment_method_id
-      if (mpError.message === 'bin_not_found') {
-        console.log('Tentando sem payment_method_id...');
-        
-        const simpleData = {
-          token: token,
-          transaction_amount: Number(transaction_amount),
-          installments: 1,
-          payer: {
-            email: payer?.email || 'test@test.com'
-          }
-        };
-        
-        try {
-          const result2 = await payment.create({ body: simpleData });
-          
-          res.json({
-            id: result2.id,
-            status: result2.status,
-            status_detail: result2.status_detail,
-            message: 'Pagamento processado!'
-          });
-        } catch (error2) {
-          throw error2;
-        }
-      } else {
-        throw mpError;
+      // Log mais detalhado do erro
+      if (mpError.cause && Array.isArray(mpError.cause)) {
+        mpError.cause.forEach((c, i) => {
+          console.error(`Causa ${i}:`, JSON.stringify(c, null, 2));
+        });
       }
+      
+      throw mpError;
     }
 
   } catch (error) {
@@ -157,10 +186,22 @@ exports.processCardPayment = async (req, res) => {
       });
     }
     
+    // Mensagens de erro mais amigáveis
+    let userMessage = 'Erro ao processar pagamento';
+    
+    if (error.message === 'bin_not_found') {
+      userMessage = 'Cartão não reconhecido. Verifique os dados do cartão.';
+    } else if (error.message === 'diff_param_bins') {
+      userMessage = 'Dados do cartão incompatíveis. Verifique as informações.';
+    } else if (error.message.includes('invalid_parameter')) {
+      userMessage = 'Dados do cartão inválidos. Verifique as informações.';
+    }
+    
     res.status(error.status || 500).json({
-      error: 'Erro ao processar pagamento',
+      error: userMessage,
       message: error.message,
-      cause: error.cause
+      cause: error.cause,
+      details: process.env.NODE_ENV === 'development' ? error : undefined
     });
   }
 };
@@ -192,7 +233,8 @@ exports.checkPaymentStatus = async (req, res) => {
     res.json({
       id: result.id,
       status: result.status,
-      status_detail: result.status_detail
+      status_detail: result.status_detail,
+      payment_method_id: result.payment_method_id
     });
   } catch (error) {
     res.status(404).json({
@@ -201,7 +243,7 @@ exports.checkPaymentStatus = async (req, res) => {
   }
 };
 
-// Função auxiliar
+// Função auxiliar para mensagens de erro
 function getRejectMessage(status_detail) {
   const messages = {
     'cc_rejected_bad_filled_card_number': 'Número do cartão inválido',

@@ -9,6 +9,7 @@ import FestaDetailPage from './FestasDetailPage';
 import ConfirmPage from './ConfirmPage';
 import Pagamento from './pagamento'; // Corrigido para P maiúsculo conforme o nome do arquivo
 import Checkout from './checkout'; // Corrigido para C maiúsculo conforme o nome do arquivo
+import DadosPage from './dados'; // 👈 NOVO: Importar página de dados
 import AboutPage from './AboutPage';
 import FAQPage from './FAQPage';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
@@ -50,6 +51,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/confirmar" element={<ConfirmPage />} />
         <Route path="/pagamento" element={<Pagamento />} />
+        <Route path="/dados" element={<DadosPage />} /> {/* 👈 NOVO: Rota para página de dados */}
         <Route path="/cancelado" element={<Cancelado />} />
         <Route path="/aguardando" element={<Aguardando />} />
         <Route path="/about" element={<AboutPage />} />
