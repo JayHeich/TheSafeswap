@@ -2,6 +2,7 @@
     "name": "safeswap",
     "version": "0.1.0",
     "private": true,
+    "proxy": "http://localhost:3001",
     "dependencies": {
         "body-parser": "^2.2.0",
         "cors": "^2.8.5",

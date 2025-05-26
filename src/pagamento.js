@@ -4,9 +4,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 // Configuração do Mercado Pago - PUBLIC KEY CONFIGURADA
 const MERCADO_PAGO_PUBLIC_KEY = 'TEST-63319c0b-3d7e-4fd4-9a08-b97ef21fc423';
 
-// URL do Backend
-const API_URL = 'http://localhost:3001';
-
 export default function Pagamento() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -68,7 +65,7 @@ export default function Pagamento() {
     setError('');
 
     try {
-      const response = await fetch(`${API_URL}/api/create-pix-payment`, {
+      const response = await fetch('/api/create-pix-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -123,31 +120,94 @@ export default function Pagamento() {
       // Criar token do cartão usando SDK do Mercado Pago
       if (window.mp) {
         try {
-          const cardToken = await window.mp.createCardToken({
+          // Criar o formulário de cartão
+          const cardForm = window.mp.cardForm({
+            amount: String(valor),
+            iframe: false,
+            form: {
+              id: "form-checkout",
+              cardNumber: {
+                id: "form-checkout__cardNumber",
+                placeholder: "Número do cartão",
+              },
+              expirationDate: {
+                id: "form-checkout__expirationDate",
+                placeholder: "MM/YY",
+              },
+              securityCode: {
+                id: "form-checkout__securityCode",
+                placeholder: "Código de segurança",
+              },
+              cardholderName: {
+                id: "form-checkout__cardholderName",
+                placeholder: "Titular do cartão",
+              },
+              issuer: {
+                id: "form-checkout__issuer",
+                placeholder: "Banco emissor",
+              },
+              installments: {
+                id: "form-checkout__installments",
+                placeholder: "Parcelas",
+              },
+              identificationType: {
+                id: "form-checkout__identificationType",
+                placeholder: "Tipo de documento",
+              },
+              identificationNumber: {
+                id: "form-checkout__identificationNumber",
+                placeholder: "Número do documento",
+              },
+              cardholderEmail: {
+                id: "form-checkout__cardholderEmail",
+                placeholder: "E-mail",
+              },
+            },
+            callbacks: {
+              onFormMounted: error => {
+                if (error) return console.warn("Form Mounted handling error: ", error);
+                console.log("Form mounted");
+              },
+              onSubmit: event => {
+                event.preventDefault();
+              }
+            }
+          });
+
+          // Método alternativo mais simples
+          const cardData = {
             cardNumber: cardFormData.cardNumber.replace(/\s/g, ''),
             cardholderName: cardFormData.cardholderName,
-            cardExpirationMonth: cardFormData.expirationMonth,
+            cardExpirationMonth: String(cardFormData.expirationMonth).padStart(2, '0'),
             cardExpirationYear: `20${cardFormData.expirationYear}`,
             securityCode: cardFormData.securityCode,
             identificationType: cardFormData.identificationType,
             identificationNumber: cardFormData.identificationNumber.replace(/\D/g, '')
-          });
+          };
 
-          console.log('Token criado:', cardToken.id);
+          console.log('Dados do cartão para token:', cardData);
+
+          const token = await window.mp.createCardToken(cardData);
+          
+          console.log('Token criado:', token);
+
+          if (!token || !token.id) {
+            throw new Error('Falha ao criar token do cartão');
+          }
 
           // Enviar token para o backend
-          const response = await fetch(`${API_URL}/api/process-card-payment`, {
+          const response = await fetch('/api/process-card-payment', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              token: cardToken.id,
+              token: token.id,
               transaction_amount: valor,
               description: `Ingresso para ${festa?.nome || 'festa'}`,
               installments: 1,
-              payment_method_id: cardToken.payment_method_id,
-              issuer_id: cardToken.issuer_id,
+              payment_method_id: token.payment_method_id || 'visa',
+              issuer_id: token.issuer_id || null,
               payer: {
                 email: cardFormData.email,
                 identification: {
