@@ -5,6 +5,20 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const routes = require('./routes');
 
+// === DEBUG NODEMAILER NO INÍCIO ===
+console.log('=== DEBUG NODEMAILER NO INÍCIO ===');
+try {
+  const testNodemailer = require('nodemailer');
+  console.log('✅ Nodemailer carregado no início!');
+  console.log('Tipo de nodemailer:', typeof testNodemailer);
+  console.log('createTransport é função?', typeof testNodemailer.createTransport);
+  console.log('Propriedades do nodemailer:', Object.keys(testNodemailer));
+} catch (e) {
+  console.log('❌ Erro ao carregar nodemailer:', e.message);
+}
+console.log('================================');
+// === FIM DO DEBUG ===
+
 // Carregar variáveis de ambiente
 dotenv.config();
 
@@ -17,19 +31,48 @@ const PORT = process.env.PORT || 3001;
 
 let transporter = null;
 try {
+  console.log('🔍 Verificando configuração de email...');
+  console.log('EMAIL_USER:', process.env.EMAIL_USER);
+  console.log('EMAIL_PASS existe?', !!process.env.EMAIL_PASS);
+  console.log('EMAIL_PASS length:', process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : 0);
+  
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
     const nodemailer = require('nodemailer');
-    transporter = nodemailer.createTransporter({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-    console.log('📧 Email configurado');
+    console.log('📧 Nodemailer carregado, tipo:', typeof nodemailer.createTransport);
+    
+    if (typeof nodemailer.createTransport === 'function') {
+      transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
+        }
+      });
+      
+      console.log('📧 Transporter criado, verificando conexão...');
+      
+      // Verificar se a conexão funciona
+      transporter.verify(function(error, success) {
+        if (error) {
+          console.log('❌ Erro ao verificar conexão Gmail:', error.message);
+          console.log('Detalhes do erro:', error);
+          transporter = null; // Define como null se houver erro
+        } else {
+          console.log('✅ Conexão Gmail verificada com sucesso!');
+        }
+      });
+    } else {
+      console.log('❌ createTransport não é uma função');
+      console.log('Conteúdo do nodemailer:', Object.keys(nodemailer));
+      transporter = null;
+    }
+  } else {
+    console.log('⚠️ EMAIL_USER ou EMAIL_PASS não encontrados no .env');
   }
 } catch (error) {
-  console.log('⚠️  Email não configurado (nodemailer não instalado)');
+  console.log('❌ Erro ao configurar email:', error.message);
+  console.log('Stack:', error.stack);
+  transporter = null;
 }
 
 // ================================
