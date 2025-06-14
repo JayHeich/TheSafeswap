@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; 
 import { useEffect, useState } from 'react';
 import festasJson from './festas.json';
 
@@ -51,6 +51,15 @@ export default function HomePage() {
         
         <div className="hidden md:flex gap-6 text-sm">
           <button
+            onClick={() => navigate('/organizador/login')}
+            className="text-gray-300 hover:text-white transition flex items-center gap-1"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            Organizador
+          </button>
+          <button
             onClick={() => navigate('/about')}
             className="text-gray-300 hover:text-white transition"
           >
@@ -102,7 +111,12 @@ export default function HomePage() {
                 className="bg-transparent border border-teal-400 text-teal-400 hover:bg-teal-400/10 px-6 py-4 rounded-xl text-lg font-medium transition duration-300 flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m-8 6H4m0 0l4 4m-4-4l4-4" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 8h10m0 0l-4-4m4 4l-4 4M17 16H7m0 0l4-4m-4 4l4 4"
+                  />
                 </svg>
                 Revender
               </button>
@@ -115,7 +129,7 @@ export default function HomePage() {
                 <div className="text-xs text-gray-400">Seguro</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-teal-400 text-xl font-bold">5%</div>
+                <div className="text-teal-400 text-xl font-bold">8%</div>
                 <div className="text-xs text-gray-400">Taxa de processamento</div>
               </div>
               <div className="flex flex-col items-center">
