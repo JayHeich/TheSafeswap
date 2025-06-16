@@ -8,6 +8,7 @@ export default function FestaDetailPage() {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [isDressCodeOpen, setIsDressCodeOpen] = useState(false);
   const [isLineUpOpen, setIsLineUpOpen] = useState(false);
+  const [isBebidasOpen, setIsBebidasOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('about');
 
   useEffect(() => {
@@ -29,9 +30,10 @@ export default function FestaDetailPage() {
   // Create Google Maps URL with custom styling for a cleaner look
   const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(festa.endereco)}&z=15&output=embed`;
 
-  // Verificar se existem informações de line-up e dress code
+  // Verificar se existem informações de line-up, dress code e bebidas
   const hasLineUp = festa.lineup && festa.lineup.length > 0;
   const hasDressCode = festa.dressCode && festa.dressCode.length > 0;
+  const hasBebidas = festa.bebidas && festa.bebidas.opcoes && festa.bebidas.opcoes.length > 0;
 
   const scrollToSection = (sectionId) => {
     const section = document.getElementById(sectionId);
@@ -117,6 +119,15 @@ export default function FestaDetailPage() {
                 <span className="text-teal-400">📍</span>
                 <span className="font-medium">{festa.local}</span>
               </div>
+              {/* Badge de bebidas */}
+              {hasBebidas && (
+                <div className="bg-black/30 backdrop-blur-sm text-white px-4 py-2 rounded-full flex items-center space-x-2 border border-white/10">
+                  <span className="text-teal-400">🍹</span>
+                  <span className="font-medium">
+                    {festa.bebidas.tipo === 'open_bar' ? 'Open Bar' : 'Bar Premium'}
+                  </span>
+                </div>
+              )}
             </div>
             
             <h1 className="text-5xl sm:text-7xl font-black tracking-tight">
@@ -246,6 +257,95 @@ export default function FestaDetailPage() {
             ))}
           </div>
         </div>
+
+        {/* Bebidas Section */}
+        {hasBebidas && (
+          <div className="mb-20">
+            <button 
+              className="w-full flex justify-between items-center bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 transition-all duration-300 hover:border-teal-400/30 group"
+              onClick={() => setIsBebidasOpen(!isBebidasOpen)}
+            >
+              <div className="flex items-center">
+                <div className="bg-teal-500/10 rounded-full p-3 w-14 h-14 flex items-center justify-center mr-4">
+                  <span className="text-teal-400 text-2xl">🍹</span>
+                </div>
+                <div className="text-left">
+                  <h2 className="text-3xl font-bold text-white">
+                    {festa.bebidas.titulo}
+                  </h2>
+                  <p className="text-sm text-gray-400 mt-1">
+                    {festa.bebidas.tipo === 'open_bar' ? 'Bebidas incluídas no ingresso' : 'Compre à parte no evento'}
+                  </p>
+                </div>
+              </div>
+              <div className={`w-10 h-10 rounded-full bg-white/10 group-hover:bg-teal-500/20 flex items-center justify-center transition-all duration-300 ${isBebidasOpen ? 'rotate-180' : ''}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
+              </div>
+            </button>
+            
+            {/* Conteúdo Colapsável das Bebidas */}
+            <div className={`overflow-hidden transition-all duration-500 ${isBebidasOpen ? 'max-h-[2000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
+              <div className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10 shadow-xl">
+                <p className="text-gray-200 leading-relaxed text-lg mb-8">
+                  {festa.bebidas.descricao}
+                </p>
+                
+                {/* Badge do tipo de bar */}
+                <div className="mb-8 flex justify-center">
+                  <div className={`inline-flex items-center px-6 py-3 rounded-full text-white font-bold text-lg ${
+                    festa.bebidas.tipo === 'open_bar' 
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600' 
+                      : 'bg-gradient-to-r from-amber-500 to-orange-600'
+                  }`}>
+                    <span className="mr-2">{festa.bebidas.tipo === 'open_bar' ? '🎉' : '💳'}</span>
+                    {festa.bebidas.tipo === 'open_bar' ? 'OPEN BAR LIBERADO' : 'BAR À PARTE'}
+                  </div>
+                </div>
+                
+                {/* Grid de bebidas */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {festa.bebidas.opcoes.map((bebida, index) => (
+                    <div 
+                      key={index} 
+                      className={`bg-white/5 p-4 rounded-xl border border-white/10 transition-all duration-300 hover:shadow-lg hover:shadow-teal-400/10 group text-center ${
+                        !bebida.disponivel ? 'opacity-50 grayscale' : ''
+                      }`}
+                    >
+                      <div className="text-3xl mb-2 group-hover:scale-110 transition-transform duration-300">
+                        {bebida.emoji}
+                      </div>
+                      <h4 className="text-white font-medium text-sm mb-1">{bebida.nome}</h4>
+                      {festa.bebidas.tipo === 'bar_pago' && bebida.preco && (
+                        <p className="text-teal-400 font-bold text-xs">{bebida.preco}</p>
+                      )}
+                      {festa.bebidas.tipo === 'open_bar' && (
+                        <p className="text-green-400 font-bold text-xs">INCLUÍDO</p>
+                      )}
+                      {!bebida.disponivel && (
+                        <p className="text-red-400 font-bold text-xs">INDISPONÍVEL</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Aviso adicional para bar pago */}
+                {festa.bebidas.tipo === 'bar_pago' && (
+                  <div className="mt-8 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+                    <div className="flex items-center text-amber-300">
+                      <span className="text-lg mr-2">💡</span>
+                      <p className="text-sm">
+                        <strong>Importante:</strong> Os preços das bebidas são cobrados à parte do ingresso. 
+                        Aceitamos dinheiro, cartão e PIX no local.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Line-Up Section */}
         <div className="mb-20">

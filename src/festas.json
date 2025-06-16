@@ -1,9 +1,7 @@
 [
   {
-    "id": "saralina",
-    "codigoOrganizador": "SARALINA2020",
     "nome": "Saralina",
-    "data": "2025-05-30",
+    "data": "2025-06-30",
     "local": "SP",
     "endereco": "Rua Augusta, 1500 – Cerqueira César, São Paulo, SP",
     "descricao": "🎉 SARALINA 2025 – O CAOS MAIS BONITO QUE VOCÊ VAI VIVER! 🌅 A Saralina não é só uma festa, é uma experiência única que mistura música boa, gente bonita, visuais de tirar o fôlego e um open bar completo pra ninguém botar defeito. Imagina curtir o pôr do sol com um drink na mão, rodeado de amigos e desconhecidos que vão virar história? Essa é a vibe. Com uma seleção de DJs de peso mandando muito no eletrônico, funk e outros ritmos que fazem a pista pegar fogo, a festa promete não deixar ninguém parado. Além disso, a estrutura conta com cenários instagramáveis, brindes exclusivos, ativações surpresa e um clima universitário perfeito pra você se soltar e aproveitar ao máximo. O dress code é livre, mas o estilo é sempre bem-vindo — vale apostar em looks leves, ousados ou criativos. A entrada é permitida apenas para maiores de 18 anos com apresentação obrigatória de RG. A organização garante segurança reforçada e ambiente controlado para que você possa curtir com tranquilidade. Não fique de fora do rolê mais falado do semestre. Garante seu ingresso e venha viver a Saralina: onde o dia vira festa e a noite vira história.",
@@ -11,6 +9,23 @@
     "categorias": {
       "Masculino": 350,
       "Feminino": 280
+    },
+    "bebidas": {
+      "tipo": "open_bar",
+      "titulo": "Open Bar Completo",
+      "descricao": "Desfrute de bebidas ilimitadas durante toda a festa! Nosso open bar premium inclui as melhores opções para você curtir sem limites.",
+      "opcoes": [
+        { "emoji": "🍺", "nome": "Cerveja Heineken", "disponivel": true },
+        { "emoji": "🍻", "nome": "Cerveja Artesanal", "disponivel": true },
+        { "emoji": "🍸", "nome": "Coquetéis Premium", "disponivel": true },
+        { "emoji": "🍹", "nome": "Drinks Tropicais", "disponivel": true },
+        { "emoji": "🥃", "nome": "Whisky Nacional", "disponivel": true },
+        { "emoji": "🧊", "nome": "Vodka Premium", "disponivel": true },
+        { "emoji": "🍯", "nome": "Shots Variados", "disponivel": true },
+        { "emoji": "☕", "nome": "Energético", "disponivel": true },
+        { "emoji": "🥤", "nome": "Refrigerantes", "disponivel": true },
+        { "emoji": "💧", "nome": "Água", "disponivel": true }
+      ]
     },
     "lineup": [
       {
@@ -36,7 +51,7 @@
     "id": "bardosbixos",
     "codigoOrganizador": "BIXOS2025",
     "nome": "Bar dos Bixos",
-    "data": "2025-06-20",
+    "data": "2025-07-20",
     "local": "SP",
     "endereco": "Avenida Paulista, 2000 – Bela Vista, São Paulo, SP",
     "descricao": "🎉 BAR DOS BIXOS 2025 – A TRADIÇÃO MAIS INSANA DO ANO! 🍻 Seja bem-vindo ao Bar dos Bixos, o rolê mais esperado do semestre! Uma festa lendária feita por veteranos para receber os calouros da melhor forma possível: com MUITA bebida, música e gente linda de todas as faculdades! O que te espera? ✔️ Open bar completo – Cerveja, drinks, vodka, energético e muito mais! 🎧 DJs de peso – Funk, eletrônico, pop e tudo que faz a pista pegar fogo! 📸 Área instagramável – Spots incríveis para registrar seu look e fazer história! 🎭 Temática universitária – Vem com sua camiseta do curso ou fantasia! 🎉 Brindes, shots e surpresas a noite toda. CATEGORIAS DE INGRESSO: - Pista Masculino e Pista Feminino – Acesso total ao open bar e pista principal. DRESS CODE: Estilo universitário liberado – O importante é vir pronto para viver uma noite que vai entrar para a história da sua graduação. Proibida a entrada de menores de 18 anos. Leve seu RG. Organização responsável e segurança garantida para que você curta sem preocupação. Garanta já seu ingresso e viva o início da faculdade como deve ser: inesquecível.",
@@ -44,6 +59,23 @@
     "categorias": {
       "Pista Masculino": 230,
       "Pista Feminino": 190
+    },
+    "bebidas": {
+      "tipo": "open_bar",
+      "titulo": "Open Bar Universitário",
+      "descricao": "Porque calouro merece curtir sem se preocupar! Open bar liberado com tudo que você precisa para uma noite inesquecível.",
+      "opcoes": [
+        { "emoji": "🍺", "nome": "Cerveja Gelada", "disponivel": true },
+        { "emoji": "🍻", "nome": "Cerveja Long Neck", "disponivel": true },
+        { "emoji": "🍸", "nome": "Caipirinha", "disponivel": true },
+        { "emoji": "🍹", "nome": "Batida de Coco", "disponivel": true },
+        { "emoji": "🧊", "nome": "Vodka", "disponivel": true },
+        { "emoji": "🍯", "nome": "Shots de Balada", "disponivel": true },
+        { "emoji": "☕", "nome": "Energético", "disponivel": true },
+        { "emoji": "🥤", "nome": "Refrigerante", "disponivel": true },
+        { "emoji": "💧", "nome": "Água", "disponivel": true },
+        { "emoji": "🎉", "nome": "Drinks Especiais", "disponivel": true }
+      ]
     },
     "lineup": [
       {
@@ -69,7 +101,7 @@
     "id": "collided",
     "codigoOrganizador": "COLLIDED2025",
     "nome": "Collided",
-    "data": "2025-06-15",
+    "data": "2025-07-15",
     "local": "SP",
     "endereco": "Rua da Consolação, 1200 – Consolação, São Paulo, SP",
     "descricao": "Electro + Funk + HipHop em um dos maiores eventos indoor de São Paulo.",
@@ -77,6 +109,23 @@
     "categorias": {
       "Pista": 225,
       "VIP": 300
+    },
+    "bebidas": {
+      "tipo": "bar_pago",
+      "titulo": "Bar Premium",
+      "descricao": "Desfrute de bebidas de alta qualidade em nosso bar completo. Pagamento à parte com preços especiais para o evento.",
+      "opcoes": [
+        { "emoji": "🍺", "nome": "Cerveja Importada", "disponivel": true, "preco": "R$ 15" },
+        { "emoji": "🍻", "nome": "Cerveja Artesanal", "disponivel": true, "preco": "R$ 18" },
+        { "emoji": "🍸", "nome": "Coquetéis Especiais", "disponivel": true, "preco": "R$ 25" },
+        { "emoji": "🍹", "nome": "Drinks Autorais", "disponivel": true, "preco": "R$ 30" },
+        { "emoji": "🥃", "nome": "Whisky Premium", "disponivel": true, "preco": "R$ 35" },
+        { "emoji": "🧊", "nome": "Vodka Importada", "disponivel": true, "preco": "R$ 20" },
+        { "emoji": "🍯", "nome": "Shots Especiais", "disponivel": true, "preco": "R$ 12" },
+        { "emoji": "☕", "nome": "Energético", "disponivel": true, "preco": "R$ 10" },
+        { "emoji": "🥤", "nome": "Refrigerantes", "disponivel": true, "preco": "R$ 8" },
+        { "emoji": "💧", "nome": "Água", "disponivel": true, "preco": "R$ 5" }
+      ]
     },
     "lineup": [
       {
@@ -102,7 +151,7 @@
     "id": "keinemusik",
     "codigoOrganizador": "KEINEMUSIK2025",
     "nome": "Keinemusik",
-    "data": "2025-07-25",
+    "data": "2025-06-25",
     "local": "RJ",
     "endereco": "Av. Atlântica, 300 – Copacabana, Rio de Janeiro, RJ",
     "descricao": "Keinemusik pela primeira vez no Brasil — evento internacional, exclusivo, frente-mar.",
@@ -111,6 +160,23 @@
       "Pista": 460,
       "Camarote": 620,
       "Backstage": 850
+    },
+    "bebidas": {
+      "tipo": "bar_pago",
+      "titulo": "Bar Internacional Premium",
+      "descricao": "Experiência gastronômica única com bebidas importadas e criações exclusivas de mixologistas renomados.",
+      "opcoes": [
+        { "emoji": "🍾", "nome": "Champagne Dom Pérignon", "disponivel": true, "preco": "R$ 150" },
+        { "emoji": "🥂", "nome": "Prosecco Italiano", "disponivel": true, "preco": "R$ 45" },
+        { "emoji": "🍷", "nome": "Vinho Premium", "disponivel": true, "preco": "R$ 35" },
+        { "emoji": "🍸", "nome": "Coquetéis Autorais", "disponivel": true, "preco": "R$ 40" },
+        { "emoji": "🍹", "nome": "Drinks Exclusivos", "disponivel": true, "preco": "R$ 45" },
+        { "emoji": "🥃", "nome": "Whisky Single Malt", "disponivel": true, "preco": "R$ 50" },
+        { "emoji": "🧊", "nome": "Vodka Grey Goose", "disponivel": true, "preco": "R$ 35" },
+        { "emoji": "🍺", "nome": "Cerveja Importada", "disponivel": true, "preco": "R$ 20" },
+        { "emoji": "☕", "nome": "Energético Premium", "disponivel": true, "preco": "R$ 15" },
+        { "emoji": "💧", "nome": "Água Evian", "disponivel": true, "preco": "R$ 10" }
+      ]
     },
     "lineup": [
       {
