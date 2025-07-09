@@ -5,13 +5,14 @@ import './index.css';
 import HomePage from './HomePage';
 import RevendaPage from './RevendaPage';
 import FestasPage from './FestasPage';
-import FestaDetailPage from './FestasDetailPage'; // 🔧 CORRIGIDO: Removido o "s" extra
+import FestaDetailPage from './FestasDetailPage';
 import ConfirmPage from './ConfirmPage';
 import Pagamento from './pagamento';
 import Checkout from './checkout';
 import DadosPage from './dados';
 import AboutPage from './AboutPage';
 import FAQPage from './FAQPage';
+import TermsPrivacyPage from './TermsPrivacyPage'; // 🆕 NOVO: Importar página de termos
 import OrganizadorLoginPage from './OrganizadorLoginPage';
 import QRValidatorPage from './QRValidatorPage';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
@@ -148,6 +149,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/aguardando" element={<Aguardando />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/faq" element={<FAQPage />} />
+          
+          {/* 🆕 NOVA: Rota para Termos de Uso e Política de Privacidade */}
+          <Route path="/terms-privacy" element={<TermsPrivacyPage />} />
           
           {/* Rotas do organizador */}
           <Route path="/organizador/login" element={<OrganizadorLoginPage />} />

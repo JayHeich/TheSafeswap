@@ -166,6 +166,11 @@ const DadosPage = () => {
     navigate('/');
   };
 
+  // 🆕 NOVA: Função para navegar para a página de termos
+  const handleTermsClick = () => {
+    navigate('/terms-privacy');
+  };
+
   // Se não há dados de pagamento, mostrar loading
   if (!paymentData) {
     return (
@@ -498,10 +503,24 @@ const DadosPage = () => {
           </svg>
         </button>
 
-        {/* Rodapé */}
+        {/* 🆕 MODIFICADO: Rodapé com navegação funcionando */}
         <div className="mt-8 pt-6 border-t border-gray-700">
           <p className="text-gray-400 text-xs text-center">
-            Ao continuar, você concorda com nossos <button className="text-teal-400 hover:underline">Termos de Uso</button> e <button className="text-teal-400 hover:underline">Política de Privacidade</button>.
+            Ao continuar, você concorda com nossos{' '}
+            <button 
+              onClick={handleTermsClick}
+              className="text-teal-400 hover:underline transition-colors"
+            >
+              Termos de Uso
+            </button>
+            {' '}e{' '}
+            <button 
+              onClick={handleTermsClick}
+              className="text-teal-400 hover:underline transition-colors"
+            >
+              Política de Privacidade
+            </button>
+            .
           </p>
         </div>
       </div>
