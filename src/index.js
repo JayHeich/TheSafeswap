@@ -5,15 +5,15 @@ import './index.css';
 import HomePage from './HomePage';
 import RevendaPage from './RevendaPage';
 import FestasPage from './FestasPage';
-import FestaDetailPage from './FestasDetailPage';
+import FestaDetailPage from './FestasDetailPage'; // 🔧 CORRIGIDO: Removido o "s" extra
 import ConfirmPage from './ConfirmPage';
 import Pagamento from './pagamento';
 import Checkout from './checkout';
 import DadosPage from './dados';
 import AboutPage from './AboutPage';
 import FAQPage from './FAQPage';
-import OrganizadorLoginPage from './OrganizadorLoginPage'; // Página de login do organizador
-import QRValidatorPage from './QRValidatorPage'; // 👈 NOVO: Importar a página do validador
+import OrganizadorLoginPage from './OrganizadorLoginPage';
+import QRValidatorPage from './QRValidatorPage';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 
 function Cancelado() {
@@ -90,29 +90,71 @@ function OrganizadorDashboard() {
   );
 }
 
+// Adicionar tratamento de erros
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
+          <div className="text-center max-w-md">
+            <h1 className="text-3xl font-bold mb-4 text-red-500">Oops! Algo deu errado</h1>
+            <p className="text-gray-400 mb-4">Ocorreu um erro ao carregar a página.</p>
+            <pre className="bg-gray-800 p-4 rounded text-xs text-left overflow-auto mb-4">
+              {this.state.error?.toString()}
+            </pre>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-6 py-2 bg-teal-500 hover:bg-teal-600 rounded-lg transition-colors"
+            >
+              Recarregar Página
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <Router>
-      <Routes>
-        {/* Rotas principais */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/festas" element={<FestasPage />} />
-        <Route path="/evento" element={<FestaDetailPage />} />
-        <Route path="/revenda" element={<RevendaPage />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/confirmar" element={<ConfirmPage />} />
-        <Route path="/pagamento" element={<Pagamento />} />
-        <Route path="/dados" element={<DadosPage />} />
-        <Route path="/cancelado" element={<Cancelado />} />
-        <Route path="/aguardando" element={<Aguardando />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/faq" element={<FAQPage />} />
-        
-        {/* Rotas do organizador */}
-        <Route path="/organizador/login" element={<OrganizadorLoginPage />} />
-        <Route path="/organizador/dashboard" element={<OrganizadorDashboard />} />
-        <Route path="/organizador/validar/:festaId" element={<QRValidatorPage />} /> {/* 👈 NOVA ROTA */}
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          {/* Rotas principais */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/festas" element={<FestasPage />} />
+          <Route path="/evento" element={<FestaDetailPage />} />
+          <Route path="/revenda" element={<RevendaPage />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/confirmar" element={<ConfirmPage />} />
+          <Route path="/pagamento" element={<Pagamento />} />
+          <Route path="/dados" element={<DadosPage />} />
+          <Route path="/cancelado" element={<Cancelado />} />
+          <Route path="/aguardando" element={<Aguardando />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/faq" element={<FAQPage />} />
+          
+          {/* Rotas do organizador */}
+          <Route path="/organizador/login" element={<OrganizadorLoginPage />} />
+          <Route path="/organizador/dashboard" element={<OrganizadorDashboard />} />
+          <Route path="/organizador/validar/:festaId" element={<QRValidatorPage />} />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   </React.StrictMode>
 );

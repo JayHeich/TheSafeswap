@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import SpotifyPlaylistModal from './SpotifyPlaylistModal'; // 🎵 NOVO: Importar o modal
 
 export default function FestaDetailPage() {
   const navigate = useNavigate();
@@ -10,6 +11,9 @@ export default function FestaDetailPage() {
   const [isLineUpOpen, setIsLineUpOpen] = useState(false);
   const [isBebidasOpen, setIsBebidasOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('about');
+  
+  // 🎵 NOVO: Estado para controlar o modal do Spotify
+  const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
 
   useEffect(() => {
     // Trigger fade-in animation
@@ -30,10 +34,20 @@ export default function FestaDetailPage() {
   // Create Google Maps URL with custom styling for a cleaner look
   const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(festa.endereco)}&z=15&output=embed`;
 
-  // Verificar se existem informações de line-up, dress code e bebidas
+  // Verificar se existem informações de line-up, dress code, bebidas, temperatura e playlist
   const hasLineUp = festa.lineup && festa.lineup.length > 0;
   const hasDressCode = festa.dressCode && festa.dressCode.length > 0;
   const hasBebidas = festa.bebidas && festa.bebidas.opcoes && festa.bebidas.opcoes.length > 0;
+  
+  // 🎵 NOVO: Verificar se tem playlist do Spotify
+  const hasSpotifyPlaylist = festa.spotifyPlaylist && festa.spotifyPlaylist.trim() !== '';
+  
+  // Verificação mais robusta para temperatura
+  const hasTemperatura = festa.temperatura && 
+                        festa.temperatura.min !== undefined && 
+                        festa.temperatura.max !== undefined &&
+                        festa.temperatura.min !== null && 
+                        festa.temperatura.max !== null;
 
   const scrollToSection = (sectionId) => {
     const section = document.getElementById(sectionId);
@@ -41,6 +55,24 @@ export default function FestaDetailPage() {
       section.scrollIntoView({ behavior: 'smooth' });
     }
     setActiveSection(sectionId);
+  };
+
+  // Função melhorada para determinar o ícone do clima baseado na temperatura
+  const getWeatherIcon = (temp) => {
+    if (!temp || temp.max === undefined || temp.max === null) return '🌡️';
+    if (temp.max > 25) return '☀️';
+    if (temp.max > 20) return '🌤️';
+    if (temp.max > 15) return '⛅';
+    return '🌧️';
+  };
+
+  // Função para determinar a cor do badge de temperatura
+  const getTemperatureColor = (temp) => {
+    if (!temp || temp.max === undefined || temp.max === null) return 'from-gray-500 to-gray-600';
+    if (temp.max > 25) return 'from-orange-500 to-red-500';
+    if (temp.max > 20) return 'from-yellow-500 to-orange-500';
+    if (temp.max > 15) return 'from-blue-500 to-teal-500';
+    return 'from-blue-600 to-purple-600';
   };
 
   return (
@@ -119,6 +151,19 @@ export default function FestaDetailPage() {
                 <span className="text-teal-400">📍</span>
                 <span className="font-medium">{festa.local}</span>
               </div>
+              
+              {/* Badge de temperatura */}
+              {hasTemperatura && (
+                <div className="bg-black/30 backdrop-blur-sm text-white px-4 py-2 rounded-full flex items-center space-x-2 border border-white/10 group hover:border-teal-400/50 transition-all duration-300">
+                  <span className="text-2xl group-hover:scale-110 transition-transform duration-300">
+                    {getWeatherIcon(festa.temperatura)}
+                  </span>
+                  <span className="font-medium">
+                    {festa.temperatura.min}° - {festa.temperatura.max}°C
+                  </span>
+                </div>
+              )}
+              
               {/* Badge de bebidas */}
               {hasBebidas && (
                 <div className="bg-black/30 backdrop-blur-sm text-white px-4 py-2 rounded-full flex items-center space-x-2 border border-white/10">
@@ -127,6 +172,19 @@ export default function FestaDetailPage() {
                     {festa.bebidas.tipo === 'open_bar' ? 'Open Bar' : 'Bar Premium'}
                   </span>
                 </div>
+              )}
+              
+              {/* 🎵 NOVO: Badge para playlist do Spotify */}
+              {hasSpotifyPlaylist && (
+                <button
+                  onClick={() => setIsSpotifyModalOpen(true)}
+                  className="bg-[#1DB954]/20 backdrop-blur-sm text-[#1DB954] px-4 py-2 rounded-full flex items-center space-x-2 border border-[#1DB954]/30 hover:bg-[#1DB954]/30 transition-all duration-300"
+                >
+                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                  </svg>
+                  <span className="font-medium">Playlist</span>
+                </button>
               )}
             </div>
             
@@ -143,6 +201,19 @@ export default function FestaDetailPage() {
               >
                 <span className="mr-2">🎫</span> Comprar Ingresso
               </button>
+              
+              {/* 🎵 NOVO: Botão para abrir playlist (versão hero) */}
+              {hasSpotifyPlaylist && (
+                <button
+                  onClick={() => setIsSpotifyModalOpen(true)}
+                  className="px-8 py-4 bg-[#1DB954]/20 backdrop-blur-md text-[#1DB954] border border-[#1DB954]/30 font-medium text-lg rounded-xl transition-all duration-300 hover:bg-[#1DB954]/30 flex items-center justify-center"
+                >
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 mr-2" fill="currentColor">
+                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                  </svg>
+                  Playlist
+                </button>
+              )}
               
               <button
                 onClick={() => scrollToSection('about')}
@@ -167,6 +238,34 @@ export default function FestaDetailPage() {
           
           <div className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10 shadow-xl">
             <p className="text-gray-200 leading-relaxed text-lg">{festa.descricao}</p>
+            
+            {/* 🎵 NOVO: Seção para playlist dentro do About */}
+            {hasSpotifyPlaylist && (
+              <div className="mt-8 pt-6 border-t border-white/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-[#1DB954]/20 rounded-full flex items-center justify-center">
+                      <svg viewBox="0 0 24 24" className="w-6 h-6 text-[#1DB954]" fill="currentColor">
+                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">Playlist Oficial</h3>
+                      <p className="text-gray-400 text-sm">Ouça as músicas que vão rolar na festa</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsSpotifyModalOpen(true)}
+                    className="px-6 py-3 bg-[#1DB954] hover:bg-[#1ed760] text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    Ouvir Playlist
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         
@@ -409,7 +508,7 @@ export default function FestaDetailPage() {
           </div>
         </div>
         
-        {/* Dress Code Section */}
+        {/* Dress Code Section - COM PREVISÃO DE TEMPERATURA MELHORADA */}
         <div className="mb-20">
           <button 
             className="w-full flex justify-between items-center bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 transition-all duration-300 hover:border-teal-400/30 group"
@@ -431,11 +530,71 @@ export default function FestaDetailPage() {
           {/* Conteúdo Colapsável */}
           <div className={`overflow-hidden transition-all duration-500 ${isDressCodeOpen ? 'max-h-[2000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
             <div className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10 shadow-xl">
+              
+              {/* Seção de Previsão de Temperatura - MELHORADA */}
+              {hasTemperatura && (
+                <div className={`mb-8 p-6 bg-gradient-to-r ${getTemperatureColor(festa.temperatura)}/10 rounded-xl border ${getTemperatureColor(festa.temperatura).replace('to-', 'border-').split(' ')[0]}/20`}>
+                  <div className="flex items-center justify-center mb-4">
+                    <div className={`bg-gradient-to-r ${getTemperatureColor(festa.temperatura)}/20 rounded-full p-4 mr-4`}>
+                      <span className="text-4xl">{getWeatherIcon(festa.temperatura)}</span>
+                    </div>
+                    <div className="text-center">
+                      <h3 className="text-2xl font-bold text-white mb-2">Previsão do Tempo</h3>
+                      <div className="flex items-center justify-center space-x-4">
+                        <div className="text-center">
+                          <p className="text-teal-300 text-sm">Mínima</p>
+                          <p className="text-white text-2xl font-bold">{festa.temperatura.min}°C</p>
+                        </div>
+                        <div className="text-white text-3xl">•</div>
+                        <div className="text-center">
+                          <p className="text-teal-300 text-sm">Máxima</p>
+                          <p className="text-white text-2xl font-bold">{festa.temperatura.max}°C</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Informações de clima e descrição */}
+                  <div className="space-y-3">
+                    {festa.temperatura.clima && (
+                      <div className="text-center bg-white/5 rounded-lg p-4">
+                        <p className="text-blue-200 font-medium text-lg">{festa.temperatura.clima}</p>
+                        {festa.temperatura.descricao && (
+                          <p className="text-gray-300 text-sm mt-1">{festa.temperatura.descricao}</p>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Dica de vestuário baseada na temperatura */}
+                    {hasTemperatura && festa.temperatura.max && (
+                      <div className="bg-white/5 rounded-lg p-4">
+                        <div className="flex items-center justify-center text-yellow-300 mb-2">
+                          <span className="text-lg mr-2">💡</span>
+                          <span className="font-medium">Dica de Vestimenta</span>
+                        </div>
+                        <p className="text-gray-300 text-sm text-center">
+                          {festa.temperatura.max > 25 && "Aposte em roupas leves e respiráveis! Vai fazer calor."}
+                          {festa.temperatura.max > 20 && festa.temperatura.max <= 25 && "Temperatura agradável! Roupas leves a médias são ideais."}
+                          {festa.temperatura.max > 15 && festa.temperatura.max <= 20 && "Leve uma jaqueta! A temperatura pode variar durante a noite."}
+                          {festa.temperatura.max <= 15 && "Vista-se bem agasalhado! Vai fazer frio."}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {hasDressCode ? (
                 <>
                   <p className="text-gray-200 leading-relaxed text-lg mb-8">
                     Sugerimos trajes elegantes para aproveitar ao máximo a experiência do evento.
-                    Confira algumas inspirações para o seu look:
+                    {hasTemperatura && festa.temperatura.clima && festa.temperatura.descricao && 
+                      ` Com ${festa.temperatura.clima.toLowerCase()}, ${festa.temperatura.descricao.toLowerCase()}`
+                    }
+                    {hasTemperatura && (!festa.temperatura.clima || !festa.temperatura.descricao) && 
+                      ` Com temperatura entre ${festa.temperatura.min}°C e ${festa.temperatura.max}°C.`
+                    }
+                    {hasTemperatura ? " Confira algumas inspirações para o seu look:" : " Confira algumas inspirações para o seu look:"}
                   </p>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -462,8 +621,16 @@ export default function FestaDetailPage() {
                     <div className="absolute inset-0 bg-teal-400/20 rounded-full animate-ping opacity-75"></div>
                     <div className="relative bg-teal-500/10 rounded-full p-6 text-teal-400 text-5xl">👗</div>
                   </div>
-                  <p className="text-gray-300 text-center text-2xl font-bold mt-8">Informações indisponíveis</p>
-                  <p className="text-gray-400 text-center mt-3 max-w-md">O dress code deste evento ainda não foi divulgado. Fique atento para atualizações!</p>
+                  <p className="text-gray-300 text-center text-2xl font-bold mt-8">Dress Code Livre</p>
+                  <p className="text-gray-400 text-center mt-3 max-w-md">
+                    Vista-se confortavelmente e aproveite a festa! 
+                    {hasTemperatura && festa.temperatura.clima && festa.temperatura.descricao && 
+                      ` Com ${festa.temperatura.clima.toLowerCase()}, ${festa.temperatura.descricao.toLowerCase()}`
+                    }
+                    {hasTemperatura && (!festa.temperatura.clima || !festa.temperatura.descricao) && 
+                      ` Temperatura prevista: ${festa.temperatura.min}°C - ${festa.temperatura.max}°C.`
+                    }
+                  </p>
                 </div>
               )}
             </div>
@@ -506,6 +673,14 @@ export default function FestaDetailPage() {
           <span className="mr-2">🎫</span> Comprar Ingresso
         </button>
       </div>
+
+      {/* 🎵 NOVO: Modal do Spotify */}
+      <SpotifyPlaylistModal
+        isOpen={isSpotifyModalOpen}
+        onClose={() => setIsSpotifyModalOpen(false)}
+        playlistUrl={festa.spotifyPlaylist}
+        festaName={festa.nome}
+      />
 
       {/* Efeitos de fundo */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
