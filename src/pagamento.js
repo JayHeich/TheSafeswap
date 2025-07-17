@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-// Configuração do Mercado Pago - PUBLIC KEY CONFIGURADA
-const MERCADO_PAGO_PUBLIC_KEY = 'TEST-63319c0b-3d7e-4fd4-9a08-b97ef21fc423';
+// Configuração do Mercado Pago - PRODUÇÃO
+const MERCADO_PAGO_PUBLIC_KEY = 'APP_USR-ef0859c4-0f6b-4699-b9fa-9087464be61c';
 
 export default function Pagamento() {
   const location = useLocation();
@@ -93,21 +93,6 @@ export default function Pagamento() {
           qr_code_base64: data.point_of_interaction.transaction_data.qr_code_base64,
           payment_id: data.id
         });
-
-        // 🆕 SIMULAÇÃO: Após 15 segundos, simular pagamento aprovado (APENAS PARA TESTES)
-        // Em produção, isso será feito via webhook do Mercado Pago
-        setTimeout(() => {
-          console.log('Simulando pagamento PIX aprovado...');
-          navigate('/dados', { 
-            state: { 
-              paymentId: data.id,
-              status: 'approved',
-              valor: valor,
-              festa: festa
-            } 
-          });
-        }, 15000); // 15 segundos para dar tempo de testar
-
       } else {
         setError(data.error || 'Erro ao gerar QR Code. Tente novamente.');
       }
@@ -119,7 +104,7 @@ export default function Pagamento() {
     }
   };
 
-  // 🔧 FUNÇÃO CORRIGIDA: Processar pagamento com cartão
+  // Função para processar pagamento com cartão
   const processCardPayment = async () => {
     setLoading(true);
     setError('');
@@ -156,14 +141,12 @@ export default function Pagamento() {
             throw new Error('Falha ao criar token do cartão');
           }
 
-          // 🔧 CORREÇÃO: Payload limpo para o backend
+          // Payload para o backend
           const paymentPayload = {
             token: token.id,
             transaction_amount: valor,
             description: `Ingresso para ${festa?.nome || 'festa'}`,
             installments: 1,
-            // 🎯 REMOVIDO: payment_method_id fixo - deixa o MP detectar automaticamente
-            // 🎯 REMOVIDO: issuer_id - pode causar conflitos
             payer: {
               email: cardFormData.email,
               identification: {
@@ -203,7 +186,7 @@ export default function Pagamento() {
                 status: data.status,
                 valor: valor,
                 festa: festa,
-                paymentMethod: data.payment_method_id // Incluir método detectado
+                paymentMethod: data.payment_method_id
               } 
             });
           } else {
@@ -326,24 +309,6 @@ export default function Pagamento() {
               className="w-full py-3 bg-gray-700 text-white font-medium rounded-lg transition-all hover:bg-gray-600"
             >
               Copiar código PIX
-            </button>
-          </div>
-
-          {/* 🆕 NOVO: Botão para simular pagamento aprovado (APENAS PARA TESTES) */}
-          <div className="border-t border-gray-600 pt-4">
-            <p className="text-xs text-gray-400 text-center mb-3">⚠️ Modo de teste:</p>
-            <button
-              onClick={() => navigate('/dados', { 
-                state: { 
-                  paymentId: pixData.payment_id,
-                  status: 'approved',
-                  valor: valor,
-                  festa: festa
-                } 
-              })}
-              className="w-full py-3 bg-green-600 text-white font-medium rounded-lg transition-all hover:bg-green-500"
-            >
-              🧪 Simular Pagamento Aprovado
             </button>
           </div>
 
@@ -514,24 +479,6 @@ export default function Pagamento() {
       >
         {loading ? 'Processando...' : 'Finalizar Pagamento'}
       </button>
-
-      {/* 🆕 NOVO: Botão para simular pagamento aprovado (APENAS PARA TESTES) */}
-      <div className="border-t border-gray-600 pt-4">
-        <p className="text-xs text-gray-400 text-center mb-3">⚠️ Modo de teste:</p>
-        <button
-          onClick={() => navigate('/dados', { 
-            state: { 
-              paymentId: 'MP-TEST-' + Date.now(),
-              status: 'approved',
-              valor: valor,
-              festa: festa
-            } 
-          })}
-          className="w-full py-3 bg-green-600 text-white font-medium rounded-lg transition-all hover:bg-green-500"
-        >
-          🧪 Simular Pagamento Aprovado
-        </button>
-      </div>
     </div>
   );
 
