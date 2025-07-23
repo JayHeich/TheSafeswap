@@ -12,18 +12,36 @@ try {
   console.log('✅ Nodemailer carregado no início!');
   console.log('Tipo de nodemailer:', typeof testNodemailer);
   console.log('createTransport é função?', typeof testNodemailer.createTransport);
-  console.log('Propriedades do nodemailer:', Object.keys(testNodemailer));
 } catch (e) {
   console.log('❌ Erro ao carregar nodemailer:', e.message);
 }
 console.log('================================');
-// === FIM DO DEBUG ===
 
 // Carregar variáveis de ambiente
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+
+// 🎯 CONFIGURAÇÃO SIMPLIFICADA PARA PRODUÇÃO
+const isDevelopment = false; // Forçar produção
+const PORT = process.env.PORT || 8080; // Railway usa 8080 por padrão
+const HOST = process.env.HOST || '0.0.0.0'; // IMPORTANTE para Railway
+
+// 🌍 URLs PERMITIDAS (CORS) - PRODUÇÃO
+const allowedOrigins = [
+  'http://localhost:3000',                    // Desenvolvimento
+  'http://localhost:3001',                    // Desenvolvimento backend
+  'http://127.0.0.1:3000',                   // Desenvolvimento alternativo
+  'https://the-safeswap.vercel.app',         // 🎯 SEU VERCEL
+  'https://the-safeswap-git-main.vercel.app', // Git branch do Vercel
+  'https://the-safeswap.vercel.app/',        // Com trailing slash
+];
+
+// Remover URLs undefined/null
+const cleanOrigins = allowedOrigins.filter(Boolean);
+
+console.log('🔍 Ambiente detectado:', isDevelopment ? 'DESENVOLVIMENTO' : 'PRODUÇÃO');
+console.log('🌍 CORS permitido para:', cleanOrigins);
 
 // ================================
 // 📧 CONFIGURAÇÃO DO EMAIL (OPCIONAL)
@@ -32,16 +50,14 @@ const PORT = process.env.PORT || 3001;
 let transporter = null;
 try {
   console.log('🔍 Verificando configuração de email...');
-  console.log('EMAIL_USER:', process.env.EMAIL_USER);
-  console.log('EMAIL_PASS existe?', !!process.env.EMAIL_PASS);
-  console.log('EMAIL_PASS length:', process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : 0);
+  console.log('EMAIL_USER:', process.env.EMAIL_USER ? '✅ Configurado' : '❌ Não configurado');
+  console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? '✅ Configurado' : '❌ Não configurado');
   
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
     const nodemailer = require('nodemailer');
-    console.log('📧 Nodemailer carregado, tipo:', typeof nodemailer.createTransport);
     
     if (typeof nodemailer.createTransport === 'function') {
-      transporter = nodemailer.createTransport({
+      transporter = nodemailer.createTransporter({
         service: 'gmail',
         auth: {
           user: process.env.EMAIL_USER,
@@ -51,19 +67,17 @@ try {
       
       console.log('📧 Transporter criado, verificando conexão...');
       
-      // Verificar se a conexão funciona
+      // Verificar conexão (sem bloquear o servidor)
       transporter.verify(function(error, success) {
         if (error) {
           console.log('❌ Erro ao verificar conexão Gmail:', error.message);
-          console.log('Detalhes do erro:', error);
-          transporter = null; // Define como null se houver erro
+          transporter = null;
         } else {
           console.log('✅ Conexão Gmail verificada com sucesso!');
         }
       });
     } else {
       console.log('❌ createTransport não é uma função');
-      console.log('Conteúdo do nodemailer:', Object.keys(nodemailer));
       transporter = null;
     }
   } else {
@@ -71,7 +85,6 @@ try {
   }
 } catch (error) {
   console.log('❌ Erro ao configurar email:', error.message);
-  console.log('Stack:', error.stack);
   transporter = null;
 }
 
@@ -79,47 +92,90 @@ try {
 // 🛠️ MIDDLEWARES
 // ================================
 
+// 🌍 CORS CORRIGIDO
 app.use(cors({
-  origin: 'http://localhost:3000', // URL do seu frontend React
-  credentials: true
+  origin: function (origin, callback) {
+    // Permitir requests sem origin (mobile apps, postman, etc)
+    if (!origin) return callback(null, true);
+    
+    // Verificar se a origin está na lista permitida
+    if (cleanOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    
+    // Em desenvolvimento, ser mais permissivo
+    if (isDevelopment) {
+      console.log('🔓 Permitindo origin em desenvolvimento:', origin);
+      return callback(null, true);
+    }
+    
+    // Em produção, bloquear origins não autorizadas
+    console.log('❌ Origin bloqueada:', origin);
+    callback(new Error('Não permitido pelo CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
-// Log de requisições em desenvolvimento
-if (process.env.NODE_ENV === 'development') {
-  app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-    next();
-  });
-}
+// 📝 Log de requisições
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.path}`);
+  
+  // Log do origin em produção para debug
+  if (!isDevelopment && req.headers.origin) {
+    console.log(`🌍 Origin: ${req.headers.origin}`);
+  }
+  
+  next();
+});
 
 // ================================
 // 🌐 ROTAS
 // ================================
 
-// Rota de teste para verificar se a API está funcionando
+// 🔍 Rota de health check para Railway
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    environment: isDevelopment ? 'development' : 'production',
+    port: PORT
+  });
+});
+
+// 📋 Rota principal com informações da API
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'API do Mercado Pago funcionando!',
+    message: '🚀 API do SafeSwap funcionando!',
     version: '1.0.0',
+    environment: isDevelopment ? 'development' : 'production',
+    timestamp: new Date().toISOString(),
     endpoints: {
+      health: 'GET /health',
       createPixPayment: 'POST /api/create-pix-payment',
       processCardPayment: 'POST /api/process-card-payment',
       sendTicket: 'POST /api/send-ticket',
       checkPaymentStatus: 'GET /api/payment-status/:paymentId',
       webhook: 'POST /api/webhooks/mercadopago'
+    },
+    cors: {
+      allowedOrigins: cleanOrigins.length,
+      development: isDevelopment
     }
   });
 });
 
-// 📧 Rota para enviar ingresso por email (NOVA - só funciona se nodemailer estiver instalado)
+// 📧 Rota para enviar ingresso por email
 app.post('/api/send-ticket', async (req, res) => {
   try {
     const { contactMethod, email, whatsapp, paymentData } = req.body;
 
-    console.log('Enviando ingresso:', { 
+    console.log('📧 Enviando ingresso:', { 
       contactMethod, 
       email: email ? email.substring(0, 3) + '***' : null,
       whatsapp: whatsapp ? whatsapp.substring(0, 3) + '***' : null
@@ -129,20 +185,21 @@ app.post('/api/send-ticket', async (req, res) => {
     if (!contactMethod || (!email && !whatsapp)) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Dados incompletos' 
+        message: 'Dados incompletos: contactMethod e email/whatsapp são obrigatórios' 
       });
     }
 
-    // Se for WhatsApp, simular por enquanto
+    // WhatsApp (simulado por enquanto)
     if (contactMethod === 'whatsapp') {
-      console.log(`WhatsApp ticket simulado para: ${whatsapp}`);
+      console.log(`📱 WhatsApp ticket simulado para: ${whatsapp}`);
       return res.json({ 
         success: true, 
-        message: 'Ticket enviado via WhatsApp (simulado)' 
+        message: 'Ticket enviado via WhatsApp (simulado)',
+        ticketId: `SAFE-${Date.now().toString(36).toUpperCase()}`
       });
     }
 
-    // Se for email
+    // Email
     if (contactMethod === 'email') {
       if (!email) {
         return res.status(400).json({ 
@@ -151,20 +208,20 @@ app.post('/api/send-ticket', async (req, res) => {
         });
       }
 
-      // Se nodemailer não estiver configurado, simular
-      if (!transporter) {
-        console.log(`Email simulado para: ${email}`);
-        return res.json({ 
-          success: true, 
-          message: 'Email enviado com sucesso! (simulado - configure EMAIL_USER e EMAIL_PASS no .env para envio real)',
-          ticketId: `SAFE-${Date.now().toString(36).toUpperCase()}`
-        });
-      }
-
       // Gerar código do ingresso
       const ticketCode = `SAFE-${Date.now().toString(36).toUpperCase()}`;
 
-      // Template básico do email
+      // Se nodemailer não configurado, simular
+      if (!transporter) {
+        console.log(`📧 Email simulado para: ${email}`);
+        return res.json({ 
+          success: true, 
+          message: 'Email enviado com sucesso! (simulado - configure EMAIL_USER e EMAIL_PASS no .env para envio real)',
+          ticketId: ticketCode
+        });
+      }
+
+      // Template do email
       const emailTemplate = `
         <!DOCTYPE html>
         <html>
@@ -210,7 +267,7 @@ app.post('/api/send-ticket', async (req, res) => {
         </html>
       `;
 
-      // Enviar email
+      // Enviar email real
       const mailOptions = {
         from: `"SafeSwap" <${process.env.EMAIL_USER}>`,
         to: email,
@@ -233,16 +290,15 @@ app.post('/api/send-ticket', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       message: 'Erro interno do servidor',
-      details: error.message
+      details: isDevelopment ? error.message : 'Contate o suporte'
     });
   }
 });
 
 // ================================
-// 🔗 USAR SUAS ROTAS ORIGINAIS
+// 🔗 USAR ROTAS DA API
 // ================================
 
-// Usar as rotas da API (suas rotas originais do Mercado Pago)
 app.use(routes);
 
 // ================================
@@ -251,20 +307,30 @@ app.use(routes);
 
 // Middleware de tratamento de erros
 app.use((err, req, res, next) => {
-  console.error('Erro:', err.stack);
+  console.error('💥 Erro:', err.stack);
   
   res.status(err.status || 500).json({ 
     error: 'Algo deu errado!',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Erro interno do servidor',
-    status: err.status || 500
+    message: isDevelopment ? err.message : 'Erro interno do servidor',
+    status: err.status || 500,
+    timestamp: new Date().toISOString()
   });
 });
 
 // Rota 404
 app.use((req, res) => {
+  console.log(`❌ Rota não encontrada: ${req.method} ${req.path}`);
   res.status(404).json({ 
     error: 'Rota não encontrada',
-    message: `A rota ${req.method} ${req.path} não existe`
+    message: `A rota ${req.method} ${req.path} não existe`,
+    availableRoutes: [
+      'GET /',
+      'GET /health',
+      'POST /api/create-pix-payment',
+      'POST /api/process-card-payment',
+      'POST /api/send-ticket',
+      'GET /api/payment-status/:paymentId'
+    ]
   });
 });
 
@@ -272,36 +338,48 @@ app.use((req, res) => {
 // 🚀 INICIALIZAÇÃO
 // ================================
 
-// Iniciar servidor
-app.listen(PORT, () => {
+// Iniciar servidor com host específico para Railway
+app.listen(PORT, HOST, () => {
   console.log('=================================');
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`📍 URL: http://localhost:${PORT}`);
-  console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🚀 Servidor SafeSwap rodando!`);
+  console.log(`📍 Host: ${HOST}`);
+  console.log(`🔌 Porta: ${PORT}`);
+  console.log(`🌍 Ambiente: ${isDevelopment ? 'DESENVOLVIMENTO' : 'PRODUÇÃO'}`);
+  console.log(`📅 Iniciado em: ${new Date().toISOString()}`);
   console.log('=================================');
   
-  // Verificar se as credenciais estão configuradas
-  if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
-    console.warn('⚠️  AVISO: MERCADOPAGO_ACCESS_TOKEN não configurado no .env');
-  } else {
-    console.log('✅ Mercado Pago Access Token configurado');
+  // Status das configurações
+  console.log('📊 STATUS DAS CONFIGURAÇÕES:');
+  console.log(`💳 Mercado Pago: ${process.env.MERCADOPAGO_ACCESS_TOKEN ? '✅ Configurado' : '❌ Não configurado'}`);
+  console.log(`📧 Email: ${transporter ? '✅ Funcionando' : process.env.EMAIL_USER ? '⚠️ Parcial' : '❌ Não configurado'}`);
+  console.log(`🌍 CORS: ${cleanOrigins.length} origens permitidas`);
+  
+  if (isDevelopment) {
+    console.log('🔓 Modo desenvolvimento: CORS permissivo ativado');
   }
-
-  if (transporter) {
-    console.log('✅ Email configurado e funcionando');
-  } else if (process.env.EMAIL_USER) {
-    console.log('⚠️  Email parcialmente configurado (pode ter problema na senha)');
-  } else {
-    console.log('ℹ️  Email não configurado (funcionará em modo simulado)');
-  }
-
+  
+  console.log('=================================');
+  console.log('🎯 API pronta para receber requisições!');
   console.log('=================================');
 });
 
-// Tratamento de erros não capturados
+// 🛡️ Tratamento de erros não capturados
 process.on('unhandledRejection', (err) => {
-  console.error('Erro não tratado:', err);
+  console.error('💥 Erro não tratado (unhandledRejection):', err);
+  if (!isDevelopment) {
+    process.exit(1);
+  }
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('💥 Exceção não capturada (uncaughtException):', err);
   process.exit(1);
+});
+
+// 📡 Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('📡 SIGTERM recebido, finalizando servidor...');
+  process.exit(0);
 });
 
 module.exports = app;

@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-// Configuração do Mercado Pago - PRODUÇÃO
+// 🚀 PRODUÇÃO - URLs FIXAS
+const BACKEND_URL = 'https://ada0hs9t.up.railway.app';
 const MERCADO_PAGO_PUBLIC_KEY = 'APP_USR-ef0859c4-0f6b-4699-b9fa-9087464be61c';
+
+console.log('🚀 Modo PRODUÇÃO ativado');
+console.log('🔗 Backend URL:', BACKEND_URL);
+console.log('🔑 Public Key:', MERCADO_PAGO_PUBLIC_KEY.substring(0, 20) + '...');
 
 export default function Pagamento() {
   const location = useLocation();
@@ -65,7 +70,7 @@ export default function Pagamento() {
     setError('');
 
     try {
-      const response = await fetch('/api/create-pix-payment', {
+      const response = await fetch(`${BACKEND_URL}/api/create-pix-payment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -164,7 +169,7 @@ export default function Pagamento() {
           console.log('🚀 Enviando para backend:', paymentPayload);
 
           // Enviar token para o backend
-          const response = await fetch('/api/process-card-payment', {
+          const response = await fetch(`${BACKEND_URL}/api/process-card-payment`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
