@@ -27,22 +27,11 @@ const isDevelopment = false; // Forçar produção
 const PORT = process.env.PORT || 8080; // Railway usa 8080 por padrão
 const HOST = process.env.HOST || '0.0.0.0'; // IMPORTANTE para Railway
 
-// 🌍 URLs PERMITIDAS (CORS) - PRODUÇÃO
-const allowedOrigins = [
-  'http://localhost:3000',                    // Desenvolvimento
-  'http://localhost:3001',                    // Desenvolvimento backend
-  'http://127.0.0.1:3000',                   // Desenvolvimento alternativo
-  'https://the-safeswap.vercel.app',         // 🎯 SEU VERCEL
-  'https://the-safeswap-git-main.vercel.app', // Git branch do Vercel
-  'https://the-safeswap.vercel.app/',
-  'https://www.safeswapbr.com/',        // Com trailing slash
-];
-
-// Remover URLs undefined/null
-const cleanOrigins = allowedOrigins.filter(Boolean);
+// 🌍 CORS CONFIGURADO PARA ACEITAR QUALQUER ORIGEM (TEMPORÁRIO)
+// const allowedOrigins = [...] // Não usado - CORS está aberto
 
 console.log('🔍 Ambiente detectado:', isDevelopment ? 'DESENVOLVIMENTO' : 'PRODUÇÃO');
-console.log('🌍 CORS permitido para:', cleanOrigins);
+console.log('🌍 CORS configurado: ACEITA QUALQUER ORIGEM (*)');
 
 // ================================
 // 📧 CONFIGURAÇÃO DO EMAIL (OPCIONAL)
@@ -93,28 +82,10 @@ try {
 // 🛠️ MIDDLEWARES
 // ================================
 
-// 🌍 CORS CORRIGIDO
+// 🌍 CORS TOTALMENTE ABERTO - FUNCIONARÁ COM QUALQUER SITE
 app.use(cors({
-  origin: function (origin, callback) {
-    // Permitir requests sem origin (mobile apps, postman, etc)
-    if (!origin) return callback(null, true);
-    
-    // Verificar se a origin está na lista permitida
-    if (cleanOrigins.indexOf(origin) !== -1) {
-      return callback(null, true);
-    }
-    
-    // Em desenvolvimento, ser mais permissivo
-    if (isDevelopment) {
-      console.log('🔓 Permitindo origin em desenvolvimento:', origin);
-      return callback(null, true);
-    }
-    
-    // Em produção, bloquear origins não autorizadas
-    console.log('❌ Origin bloqueada:', origin);
-    callback(new Error('Não permitido pelo CORS'));
-  },
-  credentials: true,
+  origin: '*',  // Aceita QUALQUER origem
+  credentials: false,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -353,7 +324,7 @@ app.listen(PORT, HOST, () => {
   console.log('📊 STATUS DAS CONFIGURAÇÕES:');
   console.log(`💳 Mercado Pago: ${process.env.MERCADOPAGO_ACCESS_TOKEN ? '✅ Configurado' : '❌ Não configurado'}`);
   console.log(`📧 Email: ${transporter ? '✅ Funcionando' : process.env.EMAIL_USER ? '⚠️ Parcial' : '❌ Não configurado'}`);
-  console.log(`🌍 CORS: ${cleanOrigins.length} origens permitidas`);
+  console.log(`🌍 CORS: Aceita qualquer origem (modo aberto)`);
   
   if (isDevelopment) {
     console.log('🔓 Modo desenvolvimento: CORS permissivo ativado');
