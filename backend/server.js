@@ -34,7 +34,8 @@ const allowedOrigins = [
   'http://127.0.0.1:3000',                   // Desenvolvimento alternativo
   'https://the-safeswap.vercel.app',         // 🎯 SEU VERCEL
   'https://the-safeswap-git-main.vercel.app', // Git branch do Vercel
-  'https://the-safeswap.vercel.app/',        // Com trailing slash
+  'https://the-safeswap.vercel.app/',
+  'https://www.safeswapbr.com/',        // Com trailing slash
 ];
 
 // Remover URLs undefined/null
